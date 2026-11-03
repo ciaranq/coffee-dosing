@@ -6,3 +6,4 @@ describe("scaffold baseline", () => {
     expect(cn("p-4 text-white", "p-6")).toBe("text-white p-6");
   });
 });
+
