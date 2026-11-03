@@ -112,7 +112,7 @@ export function ResultStep({ draft, dispatch, onBack, onSaved }: Props) {
         <h1 className="mt-4 text-3xl font-semibold">Shot saved</h1>
         <p className="mt-2 text-milk/70">
           1 : {result.ratio.toFixed(2)} · {copy.name}.{" "}
-          {save.online ? "It is backed up to your account." : "It is saved on this device. Sign-in is not set up yet, so it is not backed up online."}
+          {save.online ? "It is backed up to your account." : "It is saved on this device only. Sign in to back your shots up to your account."}
         </p>
         <div className="mt-6 grid gap-3">
           <button type="button" onClick={onSaved} className="h-16 rounded-2xl bg-crema text-lg font-semibold text-espresso active:scale-[0.98]">
@@ -240,7 +240,8 @@ export function ResultStep({ draft, dispatch, onBack, onSaved }: Props) {
         </section>
       )}
 
-      <div className="mt-2">
+      {/* pinned to the bottom of the scrolling area so Save is always one tap away */}
+      <div className="sticky bottom-0 -mx-4 -mb-4 mt-2 bg-gradient-to-t from-espresso via-espresso/95 to-transparent px-4 pb-3 pt-6">
         {save.status === "error" && (
           <p role="alert" className="mb-3 text-center text-sm text-ristretto">
             {save.message}

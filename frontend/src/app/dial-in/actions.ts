@@ -1,5 +1,6 @@
 "use server";
 
+import { auth } from "@clerk/nextjs/server";
 import { computeShot, MAX_GRAMS } from "@/lib/math";
 import { mintInternalToken } from "@/lib/server/internal-jwt";
 
@@ -18,17 +19,17 @@ export interface SubmitPayload {
 
 export type SubmitResult =
   | { ok: true; persisted: true }
-  /** Valid shot, but there is no signed-in user or backend yet: the client keeps it on this device. */
-  | { ok: true; persisted: false; reason: "sign-in-not-set-up" | "backend-not-configured" }
+  /** Valid shot, but the user is signed out or the backend is not configured: the client keeps it on this device. */
+  | { ok: true; persisted: false; reason: "signed-out" | "backend-not-configured" }
   | { ok: false; error: string };
 
 /**
- * Who is signed in? Returns the Clerk user id once Clerk is provisioned (issue #11).
- * Until then there is no verified user, so this returns null and shots stay on the device.
+ * Who is signed in? The Clerk user id from the verified session, or null when signed out.
  * Deliberately no environment-variable bypass: an unverified subject must never reach the API.
  */
 async function getAuthSubject(): Promise<string | null> {
-  return null;
+  const { userId } = await auth();
+  return userId;
 }
 
 function backendOrigin(): string | null {
@@ -54,7 +55,7 @@ export async function submitShot(payload: SubmitPayload): Promise<SubmitResult> 
   if (!shot.ok) return { ok: false, error: shot.errors[0] };
 
   const subject = await getAuthSubject();
-  if (!subject) return { ok: true, persisted: false, reason: "sign-in-not-set-up" };
+  if (!subject) return { ok: true, persisted: false, reason: "signed-out" };
 
   const origin = backendOrigin();
   const secret = process.env.INTERNAL_JWT_SECRET;

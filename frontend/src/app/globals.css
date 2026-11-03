@@ -18,6 +18,21 @@ html {
   color-scheme: dark;
 }
 
+/* iPhone: no double-tap zoom on controls, no rubber-band bounce on the shell, no auto text inflation */
+button,
+a,
+select,
+summary {
+  touch-action: manipulation;
+}
+
+html,
+body {
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   background-color: var(--background);
   color: var(--foreground);

@@ -38,3 +38,4 @@ ThumbsInfo
 
 # Playwright MCP scratch
 .playwright-mcp/
+.vercel

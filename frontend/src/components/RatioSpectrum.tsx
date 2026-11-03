@@ -69,7 +69,7 @@ export function RatioSpectrum({ ratio }: Props) {
         )}
       </div>
 
-      <div className="relative mt-3 h-5 text-sm text-milk/70" aria-hidden="true">
+      <div className="relative mt-1 h-5 text-sm text-milk/70" aria-hidden="true">
         {ZONES.map((z) => {
           const left = pct(z.from);
           const width = pct(z.to) - left;

@@ -19,18 +19,15 @@ const STEPS: Record<1 | 2 | 3 | 4 | 5, { title: string; prompt: string }> = {
   5: { title: "Wet portafilter", prompt: "Weigh the portafilter straight after the shot, with the used puck still in it. Skip this if you like." },
 };
 
-function Readout({ value, waiting }: { value: string; waiting: boolean }) {
+function Waiting() {
   return (
-    <div className="flex items-baseline justify-center gap-2" aria-live="polite">
-      <span
-        className={cn("tabular font-mono text-7xl font-semibold tracking-tight", value ? "text-milk" : "text-milk/25")}
-        data-testid="readout"
-      >
-        {value || "0"}
+    <span className="inline-flex items-center gap-2 text-steam">
+      <span className="relative flex size-2.5">
+        <span className="absolute inline-flex size-full animate-ping rounded-full bg-steam opacity-70" />
+        <span className="relative inline-flex size-2.5 rounded-full bg-steam" />
       </span>
-      <span className="font-mono text-2xl text-crema">g</span>
-      {waiting && <span className="sr-only">Waiting for the scale reading</span>}
-    </div>
+      Waiting for the scale
+    </span>
   );
 }
 
@@ -64,12 +61,12 @@ export default function DialInPage() {
   }, [draft]);
 
   if (!hydrated) {
-    return <main className="flex-1 p-5" aria-busy="true" />;
+    return <main className="flex-1 p-4" aria-busy="true" />;
   }
 
   if (stale) {
     return (
-      <main className="flex flex-1 flex-col justify-center gap-4 p-5">
+      <main className="flex flex-1 flex-col justify-center gap-4 p-4">
         <section className="glass rounded-3xl p-6">
           <h1 className="text-2xl font-semibold">Pick up where you left off?</h1>
           <p className="mt-2 text-milk/70">You have a shot in progress from more than 12 hours ago.</p>
@@ -86,11 +83,9 @@ export default function DialInPage() {
     );
   }
 
-  const slide = reduce ? { opacity: 1, x: 0 } : undefined;
-
   if (step === 6) {
     return (
-      <main className="flex flex-1 flex-col gap-4 p-5">
+      <main className="flex flex-1 flex-col gap-4 p-4">
         <ResultStep draft={draft} dispatch={dispatch} onBack={() => dispatch({ type: "back" })} onSaved={finish} />
       </main>
     );
@@ -100,110 +95,108 @@ export default function DialInPage() {
   const field = STEP_WEIGHT[step];
   const value = draft.weights[field] ?? "";
   const error = value ? stepError(draft) : null;
-  const dose =
-    parseGrams(draft.weights.pfDry) !== null && parseGrams(draft.weights.pfEmpty) !== null
-      ? Math.round((parseGrams(draft.weights.pfDry)! - parseGrams(draft.weights.pfEmpty)!) * 100) / 100
-      : null;
+  const pfEmpty = parseGrams(draft.weights.pfEmpty);
+  const pfDry = parseGrams(draft.weights.pfDry);
+  const dose = pfEmpty !== null && pfDry !== null ? Math.round((pfDry - pfEmpty) * 100) / 100 : null;
 
   // live ratio preview while the cup is on the scale (step 4), using whatever is typed so far
   const preview = (() => {
     if (step < 4) return null;
-    const pfEmpty = parseGrams(draft.weights.pfEmpty);
-    const pfDry = parseGrams(draft.weights.pfDry);
     const cupEmpty = parseGrams(draft.weights.cupEmpty);
     const cupFull = parseGrams(draft.weights.cupFull);
     if (pfEmpty === null || pfDry === null || cupEmpty === null || cupFull === null) return null;
     const outcome = computeShot({ pfEmpty, pfDry, cupEmpty, cupFull });
     return outcome.ok ? outcome.result : null;
   })();
-  const ratio = step >= 5 ? (liveShot?.ratio ?? null) : preview?.ratio ?? null;
+  const ratio = step >= 5 ? (liveShot?.ratio ?? null) : (preview?.ratio ?? null);
+  const showRatio = step >= 4;
   const optional = step === 5;
   const skipping = optional && !value;
 
+  // one line of context under the reading
+  let info: React.ReactNode = null;
+  if (!value) info = <Waiting />;
+  else if (step === 2 && dose !== null && dose > 0) info = <>Dry dose <b className="tabular font-mono font-medium text-milk">{dose.toFixed(2)} g</b></>;
+  else if (step === 4 && preview) info = <>Yield <b className="tabular font-mono font-medium text-milk">{preview.yield.toFixed(2)} g</b></>;
+  else if (step === 5 && liveShot && liveShot.retainedWater !== null)
+    info = <>Retained <b className="tabular font-mono font-medium text-milk">{liveShot.retainedWater.toFixed(2)} g</b></>;
+
+  const slide = reduce ? { opacity: 1, x: 0 } : undefined;
+
   return (
-    <main className="flex flex-1 flex-col gap-4 p-5">
-      <header>
-        <p className="text-sm text-milk/60">
-          Step {step} of 5
-        </p>
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight">{config.title}</h1>
-        <div className="mt-3 flex gap-1.5" role="presentation">
-          {[1, 2, 3, 4, 5].map((s) => (
-            <span key={s} className={cn("h-1.5 flex-1 rounded-full", s < step ? "bg-crema" : s === step ? "bg-crema/70" : "bg-white/15")} />
-          ))}
-        </div>
-      </header>
+    <main className="flex min-h-0 flex-1 flex-col">
+      {/* Upper area scrolls if the screen is very short; the keypad and Next button below never move. */}
+      <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-4 pt-2">
+        <header>
+          <div className="flex items-baseline justify-between gap-3">
+            <h1 className="text-2xl font-semibold tracking-tight">{config.title}</h1>
+            <p className="shrink-0 text-sm text-milk/60">Step {step} of 5</p>
+          </div>
+          <div className="mt-1.5 flex gap-1.5" role="presentation">
+            {[1, 2, 3, 4, 5].map((s) => (
+              <span key={s} className={cn("h-1.5 flex-1 rounded-full", s < step ? "bg-crema" : s === step ? "bg-crema/70" : "bg-white/15")} />
+            ))}
+          </div>
+        </header>
 
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.section
-          key={step}
-          initial={slide ?? { opacity: 0, x: 28 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={slide ?? { opacity: 0, x: -28 }}
-          transition={{ duration: reduce ? 0 : 0.2, ease: "easeOut" }}
-          className="glass rounded-3xl p-5"
-        >
-          <p className="text-milk/80">{config.prompt}</p>
-          <div className="mt-4 flex items-center justify-center gap-2 text-sm text-steam" aria-hidden={!!value}>
-            {!value && (
-              <>
-                <span className="relative flex size-2.5">
-                  <span className="absolute inline-flex size-full animate-ping rounded-full bg-steam opacity-70" />
-                  <span className="relative inline-flex size-2.5 rounded-full bg-steam" />
-                </span>
-                Waiting for the scale
-              </>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.section
+            key={step}
+            initial={slide ?? { opacity: 0, x: 28 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={slide ?? { opacity: 0, x: -28 }}
+            transition={{ duration: reduce ? 0 : 0.2, ease: "easeOut" }}
+            className="glass rounded-3xl p-3"
+          >
+            {/* the title already says what to weigh, so the longer prompt only shows when there is room */}
+            <p className="text-sm leading-snug text-milk/75 [@media(max-height:720px)]:hidden">{config.prompt}</p>
+
+            <div className="mt-2 flex items-baseline justify-center gap-2" aria-live="polite">
+              <span
+                className={cn(
+                  "tabular font-mono text-[clamp(2.75rem,8dvh,4.5rem)] font-semibold leading-none tracking-tight",
+                  value ? "text-milk" : "text-milk/25",
+                )}
+                data-testid="readout"
+              >
+                {value || "0"}
+              </span>
+              <span className="font-mono text-2xl text-crema">g</span>
+              {!value && <span className="sr-only">Waiting for the scale reading</span>}
+            </div>
+
+            {showRatio ? (
+              <div className="mt-2">
+                <div className="mb-1.5 flex items-baseline justify-between gap-3">
+                  <span className="min-w-0 truncate text-sm text-milk/70">{info}</span>
+                  <span className="tabular shrink-0 font-mono text-xl font-semibold" data-testid="ratio">
+                    {ratio === null ? "1 : -" : `1 : ${ratio.toFixed(2)}`}
+                  </span>
+                </div>
+                <RatioSpectrum ratio={ratio} />
+              </div>
+            ) : (
+              <p className="mt-2 flex min-h-6 items-center justify-center text-sm text-milk/70">{info}</p>
             )}
-          </div>
-          <div className="mt-1">
-            <Readout value={value} waiting={!value} />
-          </div>
 
-          {step === 2 && dose !== null && dose > 0 && (
-            <p className="mt-3 text-center text-milk/70">
-              Dry dose <span className="tabular font-mono text-lg text-milk">{dose.toFixed(2)} g</span>
-            </p>
-          )}
-          {step === 4 && preview && (
-            <p className="mt-3 text-center text-milk/70">
-              Yield <span className="tabular font-mono text-lg text-milk">{preview.yield.toFixed(2)} g</span>
-            </p>
-          )}
-          {step === 5 && liveShot && liveShot.retainedWater !== null && (
-            <p className="mt-3 text-center text-milk/70">
-              Water retained in the puck{" "}
-              <span className="tabular font-mono text-lg text-milk">{liveShot.retainedWater.toFixed(2)} g</span>
-            </p>
-          )}
-          {error && (
-            <p role="alert" className="mt-3 text-center text-sm text-ristretto">
-              {error}
-            </p>
-          )}
-        </motion.section>
-      </AnimatePresence>
+            {error && (
+              <p role="alert" className="mt-2 text-center text-sm text-ristretto">
+                {error}
+              </p>
+            )}
+          </motion.section>
+        </AnimatePresence>
+      </div>
 
-      {step >= 4 && (
-        <section className="glass rounded-3xl p-5" aria-label="Brew ratio">
-          <div className="mb-3 flex items-baseline justify-between">
-            <span className="text-milk/70">Brew ratio</span>
-            <span className="tabular font-mono text-2xl font-semibold" data-testid="ratio">
-              {ratio === null ? "1 : -" : `1 : ${ratio.toFixed(2)}`}
-            </span>
-          </div>
-          <RatioSpectrum ratio={ratio} />
-        </section>
-      )}
-
-      <div className="mt-auto grid gap-4">
+      <div className="grid shrink-0 gap-2 px-4 pb-2 pt-3">
         <Keypad onKey={(key) => dispatch({ type: "key", field, key })} />
-        <div className="grid grid-cols-[auto_1fr] gap-3">
+        <div className="grid grid-cols-[auto_1fr] gap-2">
           <button
             type="button"
             onClick={() => dispatch({ type: "back" })}
             disabled={step === 1}
             aria-label="Previous step"
-            className="glass flex h-16 w-16 items-center justify-center rounded-2xl active:scale-95 disabled:opacity-30"
+            className="glass flex h-14 w-14 items-center justify-center rounded-2xl active:scale-95 disabled:opacity-30"
           >
             <ArrowLeft className="size-6" aria-hidden="true" />
           </button>
@@ -211,7 +204,7 @@ export default function DialInPage() {
             type="button"
             onClick={() => dispatch({ type: "next" })}
             disabled={!canAdvance(draft)}
-            className="flex h-16 items-center justify-center gap-2 rounded-2xl bg-crema text-lg font-semibold text-espresso transition active:scale-[0.98] disabled:bg-white/10 disabled:text-milk/40"
+            className="flex h-14 items-center justify-center gap-2 rounded-2xl bg-crema text-lg font-semibold text-espresso transition active:scale-[0.98] disabled:bg-white/10 disabled:text-milk/40"
           >
             {step === 5 ? (skipping ? "Skip wet weight" : "See my shot") : "Next"}
             <ArrowRight className="size-5" aria-hidden="true" />
