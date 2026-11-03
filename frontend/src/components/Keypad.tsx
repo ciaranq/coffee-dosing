@@ -31,20 +31,22 @@ export function Keypad({ onKey, allowDecimal = true }: Props) {
     <div role="group" aria-label="Number pad" className="grid grid-cols-3 gap-2">
       {ROWS.flat().map((key) => {
         const isBack = key === "back";
-        const disabled = key === "." && !allowDecimal;
+        const isDot = key === ".";
+        const disabled = isDot && !allowDecimal;
         return (
           <button
             key={key}
             type="button"
             disabled={disabled}
-            aria-label={isBack ? "Delete last digit" : key === "." ? "Decimal point" : key}
+            aria-label={isBack ? "Delete last digit" : isDot ? "Decimal point" : key}
             onClick={() => {
               buzz();
               onKey(key);
             }}
             className={cn(
-              "glass tabular flex h-[clamp(2.75rem,7.5dvh,4.5rem)] touch-manipulation select-none items-center justify-center rounded-2xl font-mono text-3xl font-medium text-milk transition-transform duration-75 active:scale-95 active:bg-crema/25 disabled:opacity-30",
-              isBack && "text-crema",
+              "glass tabular flex h-[clamp(2.75rem,7.5dvh,4.5rem)] touch-manipulation select-none items-center justify-center rounded-2xl font-mono text-3xl font-medium text-milk transition-all duration-75 active:scale-[0.96] active:border-crema/50 active:bg-crema/25 disabled:opacity-30",
+              isBack && "border-crema/25 bg-crema/10 text-crema",
+              isDot && "text-steam",
             )}
           >
             {isBack ? <Delete className="size-7" aria-hidden="true" /> : key}

@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ArrowLeft, Check } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
+import { ArrowLeft, Check, ChevronDown, Sparkles } from "lucide-react";
 import { Keypad } from "@/components/Keypad";
 import { CATEGORY_COPY, RatioSpectrum } from "@/components/RatioSpectrum";
 import { shotFromDraft, type Action, type Draft, type TextField, type Taste } from "@/lib/draft";
@@ -37,9 +38,17 @@ type SaveState =
   | { status: "saved"; online: boolean }
   | { status: "error"; message: string };
 
+const GRIND_BADGE: Record<"finer" | "coarser" | "keep" | "check", string> = {
+  finer: "Grind Finer",
+  coarser: "Grind Coarser",
+  keep: "Hold Settings",
+  check: "Check Puck Prep",
+};
+
 export function ResultStep({ draft, dispatch, onBack, onSaved }: Props) {
   const [field, setField] = useState<TextField>("shotTimeS");
   const [save, setSave] = useState<SaveState>({ status: "idle" });
+  const reduce = useReducedMotion();
 
   const outcome = useMemo(() => shotFromDraft(draft), [draft]);
   const result = outcome && outcome.ok ? outcome.result : null;
@@ -47,7 +56,12 @@ export function ResultStep({ draft, dispatch, onBack, onSaved }: Props) {
   const insights = useMemo(
     () =>
       result
-        ? insightsFor({ ratio: result.ratio, category: result.category, shotTimeS: parseGrams(draft.shotTimeS), taste: draft.taste ?? null })
+        ? insightsFor({
+            ratio: result.ratio,
+            category: result.category,
+            shotTimeS: parseGrams(draft.shotTimeS),
+            taste: draft.taste ?? null,
+          })
         : [],
     [result, draft.shotTimeS, draft.taste],
   );
@@ -55,7 +69,12 @@ export function ResultStep({ draft, dispatch, onBack, onSaved }: Props) {
   const nextShot = useMemo(
     () =>
       result
-        ? recommendNext({ ratio: result.ratio, category: result.category, shotTimeS: parseGrams(draft.shotTimeS), taste: draft.taste ?? null })
+        ? recommendNext({
+            ratio: result.ratio,
+            category: result.category,
+            shotTimeS: parseGrams(draft.shotTimeS),
+            taste: draft.taste ?? null,
+          })
         : null,
     [result, draft.shotTimeS, draft.taste],
   );
@@ -65,7 +84,11 @@ export function ResultStep({ draft, dispatch, onBack, onSaved }: Props) {
       <section className="glass rounded-3xl p-6">
         <h1 className="text-2xl font-semibold">Some weights are missing</h1>
         <p className="mt-2 text-milk/70">Go back and check each step has a reading.</p>
-        <button type="button" onClick={onBack} className="mt-5 h-14 w-full rounded-2xl bg-crema font-semibold text-espresso">
+        <button
+          type="button"
+          onClick={onBack}
+          className="mt-5 h-14 w-full rounded-2xl bg-crema font-semibold text-espresso"
+        >
           Back to the scale
         </button>
       </section>
@@ -114,19 +137,50 @@ export function ResultStep({ draft, dispatch, onBack, onSaved }: Props) {
   if (save.status === "saved") {
     return (
       <section className="glass rounded-3xl p-6" aria-live="polite">
-        <div className="flex size-14 items-center justify-center rounded-full bg-crema text-espresso">
-          <Check className="size-7" aria-hidden="true" />
-        </div>
-        <h1 className="mt-4 text-3xl font-semibold">Shot saved</h1>
-        <p className="mt-2 text-milk/70">
-          1 : {result.ratio.toFixed(2)} · {copy.name}.{" "}
-          {save.online ? "It is backed up to your account." : "It is saved on this device only. Sign in to back your shots up to your account."}
+        <motion.div
+          initial={reduce ? false : { scale: 0.6, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 220, damping: 16 }}
+          className="flex size-16 items-center justify-center rounded-2xl bg-crema text-espresso shadow-[0_8px_24px_-4px_rgb(238_55_64_/_0.6)]"
+        >
+          <Check className="size-8 stroke-[2.5]" aria-hidden="true" />
+        </motion.div>
+        <h1 className="mt-4 text-3xl font-semibold tracking-tight">Shot saved</h1>
+        <p className="mt-1.5 text-sm text-milk/75">
+          {save.online
+            ? "Backed up to your cloud log and stored on this device."
+            : "Saved on this device. Sign in to sync shots to your account."}
         </p>
+
+        <dl className="glass-well mt-4 grid grid-cols-3 gap-2 rounded-2xl p-3.5 text-center">
+          <div>
+            <dt className="text-xs text-milk/60">Ratio</dt>
+            <dd className="tabular mt-0.5 font-mono text-base font-semibold text-milk">1 : {result.ratio.toFixed(2)}</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-milk/60">Dose → Yield</dt>
+            <dd className="tabular mt-0.5 font-mono text-base font-semibold text-milk">
+              {result.dose.toFixed(1)}→{result.yield.toFixed(1)}g
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs text-milk/60">Style</dt>
+            <dd className="mt-0.5 text-base font-semibold text-crema">{copy.name}</dd>
+          </div>
+        </dl>
+
         <div className="mt-6 grid gap-3">
-          <button type="button" onClick={onSaved} className="h-16 rounded-2xl bg-crema text-lg font-semibold text-espresso active:scale-[0.98]">
+          <button
+            type="button"
+            onClick={onSaved}
+            className="h-16 rounded-2xl bg-crema text-lg font-semibold text-espresso shadow-[0_8px_24px_-6px_rgb(238_55_64_/_0.55)] transition active:scale-[0.98]"
+          >
             Dial in another shot
           </button>
-          <Link href="/history" className="glass flex h-16 items-center justify-center rounded-2xl text-lg font-medium active:scale-[0.98]">
+          <Link
+            href="/history"
+            className="glass flex h-16 items-center justify-center rounded-2xl text-lg font-medium transition active:scale-[0.98]"
+          >
             See history
           </Link>
         </div>
@@ -138,41 +192,51 @@ export function ResultStep({ draft, dispatch, onBack, onSaved }: Props) {
     <>
       <header className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm text-milk/60">Your shot</p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight">{copy.name}</h1>
-          <p className="mt-1 max-w-[30ch] text-milk/70">{copy.blurb}</p>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-crema/35 bg-crema/15 px-2.5 py-0.5 font-mono text-xs font-medium text-crema">
+            {copy.range}
+          </span>
+          <h1 className="mt-1.5 text-3xl font-semibold tracking-tight">{copy.name}</h1>
+          <p className="mt-0.5 max-w-[32ch] text-sm text-milk/70">{copy.blurb}</p>
         </div>
-        <button type="button" onClick={onBack} aria-label="Back to the scale" className="glass flex size-12 shrink-0 items-center justify-center rounded-2xl active:scale-95">
+        <button
+          type="button"
+          onClick={onBack}
+          aria-label="Back to the scale"
+          className="glass flex size-12 shrink-0 items-center justify-center rounded-2xl active:scale-95"
+        >
           <ArrowLeft className="size-5" aria-hidden="true" />
         </button>
       </header>
 
       <section className="glass rounded-3xl p-5" aria-label="Brew ratio">
         <div className="flex items-baseline justify-between">
-          <span className="text-milk/70">Brew ratio</span>
-          <span className="tabular font-mono text-4xl font-semibold" data-testid="ratio">
+          <span className="text-sm font-medium text-milk/70">Brew ratio</span>
+          <span className="tabular font-mono text-4xl font-semibold tracking-tight" data-testid="ratio">
             1 : {result.ratio.toFixed(2)}
           </span>
         </div>
-        <div className="mt-4">
+        <div className="mt-3.5">
           <RatioSpectrum ratio={result.ratio} />
         </div>
-        <dl className="mt-5 grid grid-cols-3 gap-2 text-center">
+        <dl className="mt-4 grid grid-cols-3 gap-2 text-center">
           {[
             ["Dose", `${result.dose.toFixed(1)} g`],
             ["Yield", `${result.yield.toFixed(1)} g`],
             ["Retained", result.retainedWater === null ? "-" : `${result.retainedWater.toFixed(1)} g`],
           ].map(([label, value]) => (
-            <div key={label} className="rounded-2xl bg-white/5 py-3">
-              <dt className="text-sm text-milk/60">{label}</dt>
-              <dd className="tabular mt-0.5 font-mono text-lg">{value}</dd>
+            <div key={label} className="glass-well rounded-2xl py-2.5">
+              <dt className="text-xs text-milk/60">{label}</dt>
+              <dd className="tabular mt-0.5 font-mono text-lg font-medium">{value}</dd>
             </div>
           ))}
         </dl>
       </section>
 
       <section className="glass rounded-3xl p-5" aria-label="How did it taste">
-        <h2 className="text-lg font-semibold">How did it taste?</h2>
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-lg font-semibold">How did it taste?</h2>
+          <span className="text-xs text-milk/55">Tap to diagnose</span>
+        </div>
         <div className="mt-3 grid grid-cols-3 gap-2" role="group" aria-label="Taste">
           {TASTES.map((t) => {
             const active = draft.taste === t.id;
@@ -183,20 +247,60 @@ export function ResultStep({ draft, dispatch, onBack, onSaved }: Props) {
                 aria-pressed={active}
                 onClick={() => dispatch({ type: "taste", taste: active ? undefined : t.id })}
                 className={cn(
-                  "flex h-20 flex-col items-center justify-center rounded-2xl border text-lg font-medium transition active:scale-95",
-                  active ? "border-crema bg-crema text-espresso" : "border-white/15 bg-white/5",
+                  "flex h-20 flex-col items-center justify-center rounded-2xl border text-lg font-semibold transition active:scale-95",
+                  active
+                    ? "border-crema bg-crema text-espresso shadow-[0_8px_20px_-6px_rgb(238_55_64_/_0.6)]"
+                    : "border-white/15 bg-white/5 text-milk hover:border-white/25",
                 )}
               >
                 {t.label}
-                <span className={cn("text-xs font-normal", active ? "text-espresso/70" : "text-milk/55")}>{t.hint}</span>
+                <span className={cn("mt-0.5 text-xs font-normal", active ? "text-espresso/75" : "text-milk/55")}>
+                  {t.hint}
+                </span>
               </button>
             );
           })}
         </div>
       </section>
 
+      {/* Hero takeaway: placed directly below Taste so the user sees what to do next immediately */}
+      {nextShot ? (
+        <section
+          className="relative overflow-hidden rounded-3xl border-2 border-crema/70 bg-gradient-to-br from-crema/20 via-crema/10 to-transparent p-5 shadow-[0_14px_34px_-12px_rgb(238_55_64_/_0.35)]"
+          aria-label="Try next"
+          aria-live="polite"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="inline-flex items-center gap-1.5 font-mono text-xs font-semibold uppercase tracking-wider text-crema">
+              <Sparkles className="size-3.5" aria-hidden="true" />
+              Try next
+            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="rounded-full bg-crema px-2.5 py-0.5 font-mono text-xs font-semibold text-espresso">
+                {GRIND_BADGE[nextShot.grind]}
+              </span>
+              {nextShot.targetRatio !== null && (
+                <span className="tabular rounded-full border border-steam/40 bg-black/40 px-2.5 py-0.5 font-mono text-xs font-medium text-steam">
+                  Aim 1 : {nextShot.targetRatio.toFixed(1)}
+                </span>
+              )}
+            </div>
+          </div>
+          <p className="mt-2.5 text-lg font-medium leading-snug text-milk" data-testid="try-next">
+            {nextShot.text}
+          </p>
+        </section>
+      ) : (
+        <section className="glass-well rounded-3xl p-4 text-center text-sm text-milk/65" aria-live="polite">
+          Tap how the shot tasted above (or enter shot time below) to get your next-shot dial-in adjustment.
+        </section>
+      )}
+
       <section className="glass rounded-3xl p-5" aria-label="Shot details">
-        <h2 className="text-lg font-semibold">Grinder and timing</h2>
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-lg font-semibold">Grinder and timing</h2>
+          <span className="text-xs text-milk/55">Optional</span>
+        </div>
         <div className="mt-3 grid grid-cols-3 gap-2" role="tablist" aria-label="Field to edit">
           {FIELDS.map((f) => {
             const active = field === f.id;
@@ -210,11 +314,13 @@ export function ResultStep({ draft, dispatch, onBack, onSaved }: Props) {
                 onClick={() => setField(f.id)}
                 className={cn(
                   "flex h-20 flex-col items-center justify-center rounded-2xl border px-1 transition active:scale-95",
-                  active ? "border-steam bg-steam/15" : "border-white/15 bg-white/5",
+                  active
+                    ? "border-steam bg-steam/15 shadow-[inset_0_1px_0_rgb(255_255_255_/_0.2)]"
+                    : "border-white/15 bg-white/5",
                 )}
               >
                 <span className="text-xs text-milk/65">{f.label}</span>
-                <span className="tabular font-mono text-xl">
+                <span className="tabular mt-0.5 font-mono text-xl font-medium">
                   {v || "-"}
                   {v && f.unit ? <span className="text-sm text-milk/60"> {f.unit}</span> : null}
                 </span>
@@ -227,26 +333,25 @@ export function ResultStep({ draft, dispatch, onBack, onSaved }: Props) {
         </div>
       </section>
 
-      {nextShot && (
-        <section className="rounded-3xl border border-crema/60 bg-crema/10 p-4" aria-label="Try next" aria-live="polite">
-          <h2 className="text-lg font-semibold">Try next</h2>
-          <p className="mt-1 text-milk" data-testid="try-next">
-            {nextShot.text}
-          </p>
-        </section>
-      )}
-
       {insights.length > 0 && (
-        <section className="grid gap-2" aria-label="Why it tasted this way">
+        <section className="grid gap-2.5" aria-label="Why it tasted this way">
           <h2 className="text-lg font-semibold">Why it tasted this way</h2>
           {insights.map((i) => (
             <details key={i.id} className="glass group rounded-2xl p-4" open={i.tips.length > 0 && insights.length === 1}>
-              <summary className="cursor-pointer list-none text-base font-medium marker:content-['']">
-                {i.title}
-                <span className="mt-1 block text-sm font-normal text-milk/70">{i.body}</span>
+              <summary className="flex cursor-pointer list-none items-start justify-between gap-3 text-base font-medium marker:content-['']">
+                <div>
+                  <span>{i.title}</span>
+                  <span className="mt-1 block text-sm font-normal text-milk/70">{i.body}</span>
+                </div>
+                {i.tips.length > 0 && (
+                  <ChevronDown
+                    className="mt-1 size-4 shrink-0 text-milk/60 transition-transform group-open:rotate-180"
+                    aria-hidden="true"
+                  />
+                )}
               </summary>
               {i.tips.length > 0 && (
-                <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm text-milk/80">
+                <ul className="mt-3 list-disc space-y-1.5 border-t border-white/10 pt-3 pl-5 text-sm text-milk/80">
                   {i.tips.map((tip) => (
                     <li key={tip}>{tip}</li>
                   ))}
@@ -268,7 +373,7 @@ export function ResultStep({ draft, dispatch, onBack, onSaved }: Props) {
           type="button"
           onClick={onSave}
           disabled={save.status === "saving"}
-          className="h-16 w-full rounded-2xl bg-crema text-lg font-semibold text-espresso transition active:scale-[0.98] disabled:opacity-60"
+          className="h-16 w-full rounded-2xl bg-crema text-lg font-semibold text-espresso shadow-[0_8px_24px_-6px_rgb(238_55_64_/_0.55)] transition active:scale-[0.98] disabled:opacity-60"
         >
           {save.status === "saving" ? "Saving..." : "Save shot"}
         </button>
