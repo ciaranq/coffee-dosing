@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "vercel-build": "next build",
     "start": "next start",
     "lint": "tsc --noEmit",
     "test": "bun test",
@@ -32,4 +33,3 @@
     "typescript": "^5.8.3"
   }
 }
-
