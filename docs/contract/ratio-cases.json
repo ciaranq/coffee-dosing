@@ -1,0 +1,64 @@
+{
+  "_note": "Shared test table. Client-side math (TypeScript) and server-side category() (Python) must both pass every case. Ratio is rounded to 3 decimals BEFORE the category is chosen, matching the Postgres generated column. Ratio value means 1 : ratio. PROVISIONAL boundary rule (lower bound inclusive, upper exclusive) pending Ciaran's confirmation.",
+  "thresholds": {
+    "ristretto": "ratio < 1.5",
+    "normale": "1.5 <= ratio < 2.5",
+    "lungo": "ratio >= 2.5 (HANDOFF.md defines the range only up to 1:4; above 1:4 is still reported as lungo)"
+  },
+  "cases": [
+    {
+      "name": "typical normale",
+      "portafilter_empty_g": 200.00, "portafilter_dry_g": 218.00,
+      "cup_empty_g": 100.00, "cup_full_g": 136.00, "portafilter_wet_g": 221.50,
+      "dose_g": 18.00, "yield_g": 36.00, "ratio": 2.000, "retained_water_g": 3.50,
+      "category": "normale"
+    },
+    {
+      "name": "ristretto",
+      "portafilter_empty_g": 200.00, "portafilter_dry_g": 218.00,
+      "cup_empty_g": 100.00, "cup_full_g": 124.00, "portafilter_wet_g": null,
+      "dose_g": 18.00, "yield_g": 24.00, "ratio": 1.333, "retained_water_g": null,
+      "category": "ristretto"
+    },
+    {
+      "name": "just below 1.5 stays ristretto",
+      "portafilter_empty_g": 200.00, "portafilter_dry_g": 218.00,
+      "cup_empty_g": 100.00, "cup_full_g": 126.99, "portafilter_wet_g": null,
+      "dose_g": 18.00, "yield_g": 26.99, "ratio": 1.499, "retained_water_g": null,
+      "category": "ristretto"
+    },
+    {
+      "name": "exactly 1.5 is normale (lower bound inclusive)",
+      "portafilter_empty_g": 200.00, "portafilter_dry_g": 220.00,
+      "cup_empty_g": 100.00, "cup_full_g": 130.00, "portafilter_wet_g": null,
+      "dose_g": 20.00, "yield_g": 30.00, "ratio": 1.500, "retained_water_g": null,
+      "category": "normale"
+    },
+    {
+      "name": "exactly 2.5 is lungo (upper bound exclusive)",
+      "portafilter_empty_g": 200.00, "portafilter_dry_g": 220.00,
+      "cup_empty_g": 100.00, "cup_full_g": 150.00, "portafilter_wet_g": null,
+      "dose_g": 20.00, "yield_g": 50.00, "ratio": 2.500, "retained_water_g": null,
+      "category": "lungo"
+    },
+    {
+      "name": "lungo",
+      "portafilter_empty_g": 200.00, "portafilter_dry_g": 218.00,
+      "cup_empty_g": 100.00, "cup_full_g": 154.00, "portafilter_wet_g": 222.00,
+      "dose_g": 18.00, "yield_g": 54.00, "ratio": 3.000, "retained_water_g": 4.00,
+      "category": "lungo"
+    },
+    {
+      "name": "larger 58mm basket dose",
+      "portafilter_empty_g": 412.30, "portafilter_dry_g": 431.80,
+      "cup_empty_g": 95.40, "cup_full_g": 134.40, "portafilter_wet_g": 436.10,
+      "dose_g": 19.50, "yield_g": 39.00, "ratio": 2.000, "retained_water_g": 4.30,
+      "category": "normale"
+    }
+  ],
+  "invalid": [
+    { "name": "dry not heavier than empty", "portafilter_empty_g": 200.00, "portafilter_dry_g": 200.00, "cup_empty_g": 100.00, "cup_full_g": 136.00 },
+    { "name": "full cup not heavier than empty cup", "portafilter_empty_g": 200.00, "portafilter_dry_g": 218.00, "cup_empty_g": 100.00, "cup_full_g": 100.00 },
+    { "name": "wet lighter than dry", "portafilter_empty_g": 200.00, "portafilter_dry_g": 218.00, "cup_empty_g": 100.00, "cup_full_g": 136.00, "portafilter_wet_g": 217.00 }
+  ]
+}
