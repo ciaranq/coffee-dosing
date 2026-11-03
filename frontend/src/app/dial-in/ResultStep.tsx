@@ -7,7 +7,7 @@ import { Keypad } from "@/components/Keypad";
 import { CATEGORY_COPY, RatioSpectrum } from "@/components/RatioSpectrum";
 import { shotFromDraft, type Action, type Draft, type TextField, type Taste } from "@/lib/draft";
 import { addHistory, logFromDraft } from "@/lib/history";
-import { insightsFor } from "@/lib/insights";
+import { insightsFor, recommendNext } from "@/lib/insights";
 import { parseGrams } from "@/lib/math";
 import { cn } from "@/lib/utils";
 import { submitShot, type SubmitPayload } from "./actions";
@@ -49,6 +49,14 @@ export function ResultStep({ draft, dispatch, onBack, onSaved }: Props) {
       result
         ? insightsFor({ ratio: result.ratio, category: result.category, shotTimeS: parseGrams(draft.shotTimeS), taste: draft.taste ?? null })
         : [],
+    [result, draft.shotTimeS, draft.taste],
+  );
+
+  const nextShot = useMemo(
+    () =>
+      result
+        ? recommendNext({ ratio: result.ratio, category: result.category, shotTimeS: parseGrams(draft.shotTimeS), taste: draft.taste ?? null })
+        : null,
     [result, draft.shotTimeS, draft.taste],
   );
 
@@ -219,9 +227,18 @@ export function ResultStep({ draft, dispatch, onBack, onSaved }: Props) {
         </div>
       </section>
 
+      {nextShot && (
+        <section className="rounded-3xl border border-crema/60 bg-crema/10 p-4" aria-label="Try next" aria-live="polite">
+          <h2 className="text-lg font-semibold">Try next</h2>
+          <p className="mt-1 text-milk" data-testid="try-next">
+            {nextShot.text}
+          </p>
+        </section>
+      )}
+
       {insights.length > 0 && (
         <section className="grid gap-2" aria-label="Why it tasted this way">
-          <h2 className="text-lg font-semibold">What to change next</h2>
+          <h2 className="text-lg font-semibold">Why it tasted this way</h2>
           {insights.map((i) => (
             <details key={i.id} className="glass group rounded-2xl p-4" open={i.tips.length > 0 && insights.length === 1}>
               <summary className="cursor-pointer list-none text-base font-medium marker:content-['']">

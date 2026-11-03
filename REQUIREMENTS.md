@@ -20,12 +20,20 @@ A web-based espresso extraction tracker and dialing-in guide designed to help us
 *   **Accessibility:** Large, tap-friendly touch targets and oversized numeric keypads designed specifically for users operating the app while standing at a coffee machine with potentially wet hands.
 
 ## 4. Core Features
-*   **The Dial-In Wizard:** A step-by-step interactive flow capturing: 
-    1. Empty portafilter weight
-    2. Full portafilter weight (Dry Dose calculation)
+*   **The Dial-In Wizard:** A quick, easy guide at your machine, in the order you actually do things:
+    1. Zero your scale
+    2. Empty portafilter weight
     3. Empty cup weight
-    4. Full cup weight (Espresso Yield calculation)
-    5. Post-brew wet portafilter weight (Water Retention calculation)
+    4. Portafilter with coffee weight (Dry Dose calculation)
+    5. Pull your shot
+    6. Cup with espresso weight (Espresso Yield calculation)
+    7. Wet portafilter weight, optional (Water Retention calculation)
 *   **Real-Time Analytics Engine:** Instantly calculates the brew ratio (e.g., 1:2.6) and visually plots it on a spectrum (Ristretto -> Normale -> Lungo).
 *   **Tasting & Grind Log:** Users rate the shot (sour, balanced, bitter) and record the machine's external grind size setting and internal burr setting.
 *   **Educational Insights:** Contextual tooltips explaining *why* a shot pulled too fast (channelling, stale beans, light tamp) or too slow, helping users adjust their grinder for the next pull.
+*   **Try next:** After each shot, one plain instruction for the next one, such as "grind one step finer and let the shot run longer (aim for about 1 : 2.2)". It only moves the grinder when shot time and taste agree.
+
+## 5. Future Features (not built)
+*   **Video analysis of the shot pull:** record the pull and analyse it (flow rate, pre-infusion, channelling signs, shot time) to give better suggestions. Tracked in a GitHub issue.
+*   **Machine-specific guidance:** the machine selector exists but every machine behaves the same today. Later, tailor grinder scale, basket size, target ratios and advice to the selected machine.
+*   **Shot timer:** time the pull in the "Pull your shot" step and fill in the shot time automatically.

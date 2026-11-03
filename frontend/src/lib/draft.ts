@@ -4,12 +4,12 @@
 import { computeShot, parseGrams, type ShotOutcome } from "./math";
 
 export type WeightKey = "pfEmpty" | "pfDry" | "cupEmpty" | "cupFull" | "pfWet";
-export type Step = 1 | 2 | 3 | 4 | 5 | 6;
+export type Step = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 export type Taste = "sour" | "balanced" | "bitter";
 export type TextField = "grindExternal" | "burrInternal" | "shotTimeS";
 
 export interface Draft {
-  v: 1;
+  v: 2;
   clientId: string;
   step: Step;
   weights: Partial<Record<WeightKey, string>>;
@@ -21,16 +21,27 @@ export interface Draft {
   updatedAt: number;
 }
 
-export const STORAGE_KEY = "dialin:draft:v1";
+// v2: the guided flow gained "zero your scale" and "pull your shot" steps, so old v1 drafts are ignored.
+export const STORAGE_KEY = "dialin:draft:v2";
 export const STALE_MS = 12 * 60 * 60 * 1000;
 
-export const STEP_WEIGHT: Record<1 | 2 | 3 | 4 | 5, WeightKey> = {
-  1: "pfEmpty",
-  2: "pfDry",
+// Guided flow: 1 zero your scale, 2 empty portafilter, 3 empty cup, 4 portafilter with coffee,
+// 5 pull your shot, 6 cup with espresso, 7 wet portafilter (optional), 8 result and tasting.
+export const STEP_WEIGHT = {
+  2: "pfEmpty",
   3: "cupEmpty",
-  4: "cupFull",
-  5: "pfWet",
-};
+  4: "pfDry",
+  6: "cupFull",
+  7: "pfWet",
+} as const satisfies Partial<Record<Step, WeightKey>>;
+
+/** Steps with nothing to weigh: the user just does the thing and taps on. */
+export const INSTRUCTION_STEPS = [1, 5] as const;
+export const LAST_GUIDED_STEP = 7;
+export const RESULT_STEP = 8;
+
+export type WeightStep = keyof typeof STEP_WEIGHT;
+export const isWeightStep = (step: Step): step is WeightStep => step in STEP_WEIGHT;
 
 export type KeypadKey = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "." | "back" | "clear";
 
@@ -45,7 +56,7 @@ export function newClientId(): string {
 }
 
 export function createDraft(now: number = Date.now()): Draft {
-  return { v: 1, clientId: newClientId(), step: 1, weights: {}, updatedAt: now };
+  return { v: 2, clientId: newClientId(), step: 1, weights: {}, updatedAt: now };
 }
 
 /** Apply one keypad press to the text being edited. Max 4 integer digits (5000 g limit) and `decimals` places. */
@@ -69,21 +80,21 @@ function weight(draft: Draft, key: WeightKey): number | null {
 /** Why the current step cannot advance yet, or null when it can. Mirrors server and DB checks. */
 export function stepError(draft: Draft): string | null {
   const { step } = draft;
-  if (step === 6) return null;
-  const value = weight(draft, STEP_WEIGHT[step]);
-  const text = draft.weights[STEP_WEIGHT[step]];
-  if (step === 5 && !text) return null; // wet puck is optional
+  if (!isWeightStep(step)) return null; // instruction steps and the result need no reading
+  const key = STEP_WEIGHT[step];
+  const value = weight(draft, key);
+  if (step === 7 && !draft.weights[key]) return null; // wet puck is optional
   if (value === null) return "Enter a weight to continue.";
-  if (value <= 0 && step !== 5) return "Weight must be above zero.";
-  if (step === 2) {
+  if (value <= 0 && step !== 7) return "Weight must be above zero.";
+  if (step === 4) {
     const empty = weight(draft, "pfEmpty");
     if (empty !== null && value <= empty) return "Portafilter with coffee must weigh more than the empty portafilter.";
   }
-  if (step === 4) {
+  if (step === 6) {
     const empty = weight(draft, "cupEmpty");
     if (empty !== null && value <= empty) return "Cup with espresso must weigh more than the empty cup.";
   }
-  if (step === 5) {
+  if (step === 7) {
     const dry = weight(draft, "pfDry");
     if (dry !== null && value < dry) return "Wet portafilter cannot weigh less than the dry one.";
   }
@@ -96,11 +107,10 @@ export function canAdvance(draft: Draft): boolean {
 
 /** First step whose data is missing or invalid: how far the draft can legitimately be shown. */
 export function maxReachableStep(draft: Draft): Step {
-  for (const s of [1, 2, 3, 4] as const) {
+  for (const s of [1, 2, 3, 4, 5, 6, 7] as const) {
     if (stepError({ ...draft, step: s }) !== null) return s;
   }
-  if (stepError({ ...draft, step: 5 }) !== null) return 5;
-  return 6;
+  return RESULT_STEP;
 }
 
 export function shotFromDraft(draft: Draft): ShotOutcome | null {
@@ -122,7 +132,7 @@ export type Action =
   | { type: "replace"; draft: Draft }
   | { type: "reset" };
 
-const clampStep = (n: number): Step => Math.min(6, Math.max(1, Math.trunc(n) || 1)) as Step;
+const clampStep = (n: number): Step => Math.min(RESULT_STEP, Math.max(1, Math.trunc(n) || 1)) as Step;
 
 export function reducer(state: Draft, action: Action, now: number = Date.now()): Draft {
   switch (action.type) {
@@ -137,7 +147,7 @@ export function reducer(state: Draft, action: Action, now: number = Date.now()):
       return { ...state, [f]: applyKey(state[f] ?? "", action.key, decimals), updatedAt: now };
     }
     case "next":
-      if (!canAdvance(state) || state.step === 6) return state;
+      if (!canAdvance(state) || state.step === RESULT_STEP) return state;
       return { ...state, step: (state.step + 1) as Step, updatedAt: now };
     case "back":
       return state.step === 1 ? state : { ...state, step: (state.step - 1) as Step, updatedAt: now };
@@ -178,8 +188,8 @@ export function parseDraft(raw: string | null): Draft | null {
   if (!raw) return null;
   try {
     const d = JSON.parse(raw) as Partial<Draft>;
-    if (d.v !== 1 || typeof d.clientId !== "string" || typeof d.updatedAt !== "number") return null;
-    if (typeof d.step !== "number" || d.step < 1 || d.step > 6 || !Number.isInteger(d.step)) return null;
+    if (d.v !== 2 || typeof d.clientId !== "string" || typeof d.updatedAt !== "number") return null;
+    if (typeof d.step !== "number" || d.step < 1 || d.step > RESULT_STEP || !Number.isInteger(d.step)) return null;
     if (typeof d.weights !== "object" || d.weights === null) return null;
     const weights: Draft["weights"] = {};
     for (const k of Object.keys(STEP_WEIGHT_SET) as WeightKey[]) {
@@ -189,7 +199,7 @@ export function parseDraft(raw: string | null): Draft | null {
     const str = (v: unknown) => (typeof v === "string" ? v : undefined);
     const taste = d.taste === "sour" || d.taste === "balanced" || d.taste === "bitter" ? d.taste : undefined;
     return {
-      v: 1,
+      v: 2,
       clientId: d.clientId,
       step: d.step as Step,
       weights,
