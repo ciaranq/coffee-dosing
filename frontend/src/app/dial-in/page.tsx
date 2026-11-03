@@ -3,7 +3,6 @@
 import { useEffect, useMemo } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight, CheckCircle2, RotateCcw } from "lucide-react";
-import { DIALIN_RESET_EVENT } from "@/components/BottomNav";
 import { Keypad } from "@/components/Keypad";
 import { RatioSpectrum } from "@/components/RatioSpectrum";
 import {
@@ -121,16 +120,6 @@ export default function DialInPage() {
   const { draft, hydrated, stale, dispatch, resume, discard, finish } = useDialInDraft();
   const reduce = useReducedMotion();
   const step = draft.step;
-
-  // Listen for BottomNav "Dial in" clicks to zero everything and start a fresh shot at step 1
-  useEffect(() => {
-    const onReset = () => {
-      discard();
-      window.history.replaceState(null, "", `${window.location.pathname}?step=1`);
-    };
-    window.addEventListener(DIALIN_RESET_EVENT, onReset);
-    return () => window.removeEventListener(DIALIN_RESET_EVENT, onReset);
-  }, [discard]);
 
   // Keep ?step= in the URL so the back button walks the wizard. The draft stays the source of truth.
   useEffect(() => {
@@ -304,17 +293,23 @@ export default function DialInPage() {
             </div>
             <div className="flex shrink-0 items-center gap-2">
               {canReset && (
+                // 44px tap target (h-11, pulled back with -my-2 so the header does not grow) around the small visible pill
                 <button
                   type="button"
                   onClick={() => {
+                    // never wipe readings on one stray tap
+                    const hasReadings = Object.values(draft.weights).some(Boolean);
+                    if (hasReadings && !window.confirm("Clear this shot and start over?")) return;
                     discard();
                     window.history.replaceState(null, "", `${window.location.pathname}?step=1`);
                   }}
                   aria-label="Start a new shot"
-                  className="inline-flex h-7 items-center gap-1 rounded-full border border-white/15 bg-white/5 px-2.5 text-xs font-medium text-milk/75 transition active:scale-95"
+                  className="group -my-2 flex h-11 min-w-11 items-center justify-center px-1 active:scale-95"
                 >
-                  <RotateCcw className="size-3 text-crema" aria-hidden="true" />
-                  Reset
+                  <span className="inline-flex h-7 items-center gap-1 rounded-full border border-white/15 bg-white/5 px-2.5 text-xs font-medium text-milk/75 transition group-active:bg-white/10">
+                    <RotateCcw className="size-3 text-crema" aria-hidden="true" />
+                    Reset
+                  </span>
                 </button>
               )}
               <p className="tabular font-mono text-xs text-milk/60">
@@ -349,7 +344,7 @@ export default function DialInPage() {
                 {/* the title already says what to weigh, so the longer prompt only shows when there is room */}
                 <p className="text-sm leading-snug text-milk/75 [@media(max-height:720px)]:hidden">{config.prompt}</p>
 
-                <div className="glass-well mt-1.5 flex items-baseline justify-center gap-2 rounded-2xl py-2" aria-live="polite">
+                <div className="glass-well mt-1 flex items-baseline justify-center gap-2 rounded-2xl py-1" aria-live="polite">
                   <span
                     className={cn(
                       "tabular font-mono text-[clamp(2.5rem,7.2dvh,4.25rem)] font-semibold leading-none tracking-tight",
@@ -364,7 +359,7 @@ export default function DialInPage() {
                 </div>
 
                 {showRatio ? (
-                  <div className="mt-2">
+                  <div className="mt-1.5">
                     <div className="mb-1 flex items-baseline justify-between gap-3">
                       <span className="min-w-0 truncate text-xs text-milk/75">{info}</span>
                       <span className="tabular shrink-0 font-mono text-lg font-semibold text-milk" data-testid="ratio">

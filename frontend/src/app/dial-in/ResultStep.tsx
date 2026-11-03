@@ -196,7 +196,7 @@ export function ResultStep({ draft, dispatch, onBack, onSaved }: Props) {
             {copy.range}
           </span>
           <h1 className="mt-1.5 text-3xl font-semibold tracking-tight">{copy.name}</h1>
-          <p className="mt-0.5 max-w-[32ch] text-sm text-milk/70">{copy.blurb}</p>
+          <p className="mt-0.5 max-w-[32ch] text-sm text-milk/70 [@media(max-height:720px)]:hidden">{copy.blurb}</p>
         </div>
         <button
           type="button"
@@ -232,12 +232,12 @@ export function ResultStep({ draft, dispatch, onBack, onSaved }: Props) {
         </dl>
       </section>
 
-      <section className="glass rounded-3xl p-5" aria-label="How did it taste">
+      <section className="glass rounded-3xl p-4" aria-label="How did it taste">
         <div className="flex items-baseline justify-between">
           <h2 className="text-lg font-semibold">How did it taste?</h2>
           <span className="text-xs text-milk/55">Tap to diagnose</span>
         </div>
-        <div className="mt-3 grid grid-cols-3 gap-2" role="group" aria-label="Taste">
+        <div className="mt-2 grid grid-cols-3 gap-2" role="group" aria-label="Taste">
           {TASTES.map((t) => {
             const active = draft.taste === t.id;
             return (
@@ -247,7 +247,7 @@ export function ResultStep({ draft, dispatch, onBack, onSaved }: Props) {
                 aria-pressed={active}
                 onClick={() => dispatch({ type: "taste", taste: active ? undefined : t.id })}
                 className={cn(
-                  "flex h-20 flex-col items-center justify-center rounded-2xl border text-lg font-semibold transition active:scale-95",
+                  "flex h-16 flex-col items-center justify-center rounded-2xl border text-lg font-semibold transition active:scale-95",
                   active
                     ? "border-crema bg-crema text-espresso shadow-[0_8px_20px_-6px_rgb(238_55_64_/_0.6)]"
                     : "border-white/15 bg-white/5 text-milk hover:border-white/25",
@@ -363,7 +363,7 @@ export function ResultStep({ draft, dispatch, onBack, onSaved }: Props) {
       )}
 
       {/* pinned to the bottom of the scrolling area so Save is always one tap away */}
-      <div className="sticky bottom-0 -mx-4 -mb-4 mt-2 bg-gradient-to-t from-espresso via-espresso/95 to-transparent px-4 pb-3 pt-6">
+      <div className="sticky bottom-0 -mx-4 -mb-4 mt-2 bg-gradient-to-t from-espresso via-espresso/95 to-transparent px-4 pb-2 pt-2">
         {save.status === "error" && (
           <p role="alert" className="mb-3 text-center text-sm text-red-tint">
             {save.message}
@@ -373,7 +373,7 @@ export function ResultStep({ draft, dispatch, onBack, onSaved }: Props) {
           type="button"
           onClick={onSave}
           disabled={save.status === "saving"}
-          className="h-16 w-full rounded-2xl bg-crema text-lg font-semibold text-espresso shadow-[0_8px_24px_-6px_rgb(238_55_64_/_0.55)] transition active:scale-[0.98] disabled:opacity-60"
+          className="h-14 w-full rounded-2xl bg-crema text-lg font-semibold text-espresso shadow-[0_8px_24px_-6px_rgb(238_55_64_/_0.55)] transition active:scale-[0.98] disabled:opacity-60"
         >
           {save.status === "saving" ? "Saving..." : "Save shot"}
         </button>

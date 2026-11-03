@@ -19,7 +19,7 @@ export function MachineSelect() {
       <select
         value={machineId}
         onChange={(e) => select(e.target.value)}
-        className="h-full w-full min-w-0 cursor-pointer appearance-none truncate rounded-2xl bg-transparent pl-10 pr-9 text-base font-medium text-milk focus:outline-none"
+        className="absolute -inset-px min-w-0 cursor-pointer appearance-none truncate rounded-2xl bg-transparent pl-10 pr-9 text-base font-medium text-milk focus:outline-none"
       >
         {MACHINES.map((m) => (
           <option key={m.id} value={m.id} className="bg-espresso text-milk">
