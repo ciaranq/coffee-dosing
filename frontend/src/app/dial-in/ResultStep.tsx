@@ -243,7 +243,7 @@ export function ResultStep({ draft, dispatch, onBack, onSaved }: Props) {
       {/* pinned to the bottom of the scrolling area so Save is always one tap away */}
       <div className="sticky bottom-0 -mx-4 -mb-4 mt-2 bg-gradient-to-t from-espresso via-espresso/95 to-transparent px-4 pb-3 pt-6">
         {save.status === "error" && (
-          <p role="alert" className="mb-3 text-center text-sm text-ristretto">
+          <p role="alert" className="mb-3 text-center text-sm text-red-tint">
             {save.message}
           </p>
         )}

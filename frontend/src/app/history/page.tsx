@@ -87,7 +87,7 @@ export default function HistoryPage() {
                   "shrink-0 rounded-full px-3 py-1.5 text-sm font-medium",
                   l.taste === "sour" && "bg-steam/20 text-steam",
                   l.taste === "balanced" && "bg-crema/20 text-crema",
-                  l.taste === "bitter" && "bg-ristretto/25 text-[#ff9b6b]",
+                  l.taste === "bitter" && "bg-ristretto/40 text-stone",
                 )}
               >
                 {TASTE_LABEL[l.taste]}

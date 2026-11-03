@@ -14,7 +14,7 @@ A web-based espresso extraction tracker and dialing-in guide designed to help us
 
 ## 3. UI/UX Design System
 *   **Aesthetic:** Modern glassmorphism (translucent panels, background blur, subtle white borders).
-*   **Palette:** Vibrant, high-contrast gradients (e.g., deep espresso browns blending into vibrant energetic accents like cyan or amber) against a dark mode canvas.
+*   **Palette:** Taken from jackmurat.com, on a dark mode canvas: ink `#111111`, paper `#f4efe7`, signal red `#ee3740` (primary accent), bone `#e8e1d4`, stone `#c9bfae`, earth `#6b4a2b`. Tokens live in `frontend/src/app/globals.css`.
 *   **Typography:** Clean, legible Google Fonts (e.g., Inter or Outfit) with distinct font weights for metric readouts.
 *   **Animations:** Framer Motion for micro-animations (smooth transitions between wizard steps, pulsing indicators when waiting for scale inputs, liquid fill animations for the brew ratio).
 *   **Accessibility:** Large, tap-friendly touch targets and oversized numeric keypads designed specifically for users operating the app while standing at a coffee machine with potentially wet hands.

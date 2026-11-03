@@ -61,7 +61,7 @@ export function RatioSpectrum({ ratio }: Props) {
         {ratio !== null && (
           <motion.span
             aria-hidden="true"
-            className="absolute top-1/2 size-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-milk bg-espresso shadow-[0_0_18px_rgb(245_165_36_/_0.55)]"
+            className="absolute top-1/2 size-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-milk bg-espresso shadow-[0_0_18px_rgb(238_55_64_/_0.55)]"
             initial={false}
             animate={{ left: `${position}%` }}
             transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 90, damping: 16 }}

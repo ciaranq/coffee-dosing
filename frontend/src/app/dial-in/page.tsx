@@ -180,7 +180,7 @@ export default function DialInPage() {
             )}
 
             {error && (
-              <p role="alert" className="mt-2 text-center text-sm text-ristretto">
+              <p role="alert" className="mt-2 text-center text-sm text-red-tint">
                 {error}
               </p>
             )}

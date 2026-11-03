@@ -20,10 +20,23 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Dial-In | Espresso Extraction Tracker",
   description: "Weigh each step, see your brew ratio instantly, and log how the shot tasted.",
+  applicationName: "Dial-In",
+  // iPhone "Add to Home Screen": opens full-screen, with the status bar drawn over the app (TopBar pads for it)
+  appleWebApp: { capable: true, title: "Dial-In", statusBarStyle: "black-translucent" },
+  icons: {
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
+  formatDetection: { telephone: false },
+  // Next only emits the newer mobile-web-app-capable; iOS has always read the Apple-prefixed one
+  other: { "apple-mobile-web-app-capable": "yes" },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0c0908",
+  themeColor: "#111111",
   width: "device-width",
   initialScale: 1,
   // lets env(safe-area-inset-*) work on iPhones with a notch or home indicator
@@ -41,10 +54,11 @@ export default function RootLayout({
       signUpUrl="/sign-up"
       appearance={{
         variables: {
-          colorPrimary: "#f5a524",
-          colorBackground: "#1a1210",
-          colorForeground: "#f8f5f2",
-          colorInput: "#2a1d16",
+          colorPrimary: "#ee3740",
+          colorPrimaryForeground: "#111111",
+          colorBackground: "#1a1a1a",
+          colorForeground: "#f4efe7",
+          colorInput: "#2a2a2a",
           borderRadius: "1rem",
         },
       }}

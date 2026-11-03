@@ -1,17 +1,22 @@
 @import "tailwindcss";
 
+/* Palette taken from jackmurat.com (jm-base.css): signal red on ink and paper, with bone, stone and earth.
+   Token names are roles, not colours: crema = primary accent, steam = secondary accent, milk = text,
+   espresso = canvas, ristretto = the dark, concentrated end of the ratio spectrum. */
 @theme {
-  --color-espresso: #0c0908;
-  --color-roast: #3b2418;
-  --color-crema: #f5a524;
-  --color-steam: #3dd6e0;
-  --color-milk: #f8f5f2;
-  --color-ristretto: #d9541e;
+  --color-espresso: #111111;
+  --color-roast: #6b4a2b;
+  --color-crema: #ee3740;
+  --color-steam: #e8e1d4;
+  --color-milk: #f4efe7;
+  --color-ristretto: #6b4a2b;
+  --color-stone: #c9bfae;
+  --color-red-tint: #fce2e3;
 }
 
 :root {
-  --background: #0c0908;
-  --foreground: #f8f5f2;
+  --background: #111111;
+  --foreground: #f4efe7;
 }
 
 html {
@@ -47,9 +52,9 @@ body {
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(60rem 36rem at 15% -8%, rgb(245 165 36 / 0.22), transparent 62%),
-    radial-gradient(50rem 32rem at 110% 30%, rgb(61 214 224 / 0.12), transparent 60%),
-    radial-gradient(46rem 30rem at -10% 105%, rgb(122 60 30 / 0.45), transparent 62%),
+    radial-gradient(60rem 36rem at 15% -8%, rgb(238 55 64 / 0.20), transparent 62%),
+    radial-gradient(50rem 32rem at 110% 30%, rgb(232 225 212 / 0.07), transparent 60%),
+    radial-gradient(46rem 30rem at -10% 105%, rgb(107 74 43 / 0.42), transparent 62%),
     var(--background);
 }
 
