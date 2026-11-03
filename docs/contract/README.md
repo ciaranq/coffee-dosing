@@ -14,7 +14,7 @@ Nothing else in AGY's list can start until it exists. Then #5 (shell), #6 (wizar
 | `ratio-cases.json` | Shared math test table. Your client-side math must pass every case and reject every `invalid` entry. |
 | `api-contract.md` | Request and response shapes. Build against it with mock data until the API is live. |
 | `schema.sql` | Reference for field names and constraints. Do not apply it; Claude owns the database. |
-| `api-draft-index.py` | Claude's draft backend. Do not edit. It moves to `frontend/api/index.py` after you scaffold. |
+| `frontend/api/index.py` | Claude's backend (moved here from `docs/contract/api-draft-index.py`). Claude owns it; do not edit. Tests: `frontend/tests/api/`. |
 
 ## Rules that matter
 

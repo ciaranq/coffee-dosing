@@ -47,7 +47,7 @@ Environment variables: `DATABASE_URL` (Neon `-pooler` DSN), `INTERNAL_JWT_SECRET
 | POST | `/api/beans` | planned | `{ name, roaster?, origin?, roast_date? }` |
 | PATCH | `/api/beans/{id}` | planned | Edit or archive (`archived_at`). Beans are archived, not deleted. |
 
-"drafted" means the code is in `api-draft-index.py` (untested, never run). "planned" means the contract is fixed but nothing is written.
+"drafted" means the code is in `frontend/api/index.py` (unit-tested against a fake database pool; never run against Neon). "planned" means the contract is fixed but nothing is written.
 
 ## Ownership
 

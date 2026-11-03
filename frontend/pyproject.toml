@@ -1,0 +1,28 @@
+[project]
+name = "coffee-dosing-api"
+version = "0.1.0"
+description = "FastAPI backend for the espresso dial-in app (served from api/index.py on Vercel)"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "fastapi",
+    "psycopg[binary,pool]",
+    "pyjwt",
+    "pydantic",
+]
+
+[dependency-groups]
+dev = [
+    "httpx",
+    "pytest",
+    "pytest-asyncio",
+    "ruff",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests/api"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 110
+target-version = "py313"
