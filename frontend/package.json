@@ -15,6 +15,7 @@
     "preflight": "bun run lint && bun test && bun run build"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.9.23",
     "clsx": "^2.1.1",
     "framer-motion": "^12.6.3",
     "lucide-react": "^1.16.0",

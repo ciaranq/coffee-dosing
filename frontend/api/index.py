@@ -1,8 +1,8 @@
-"""DRAFT of frontend/api/index.py. Untested, never run.
+"""Espresso dial-in API: single FastAPI app, served by Vercel at /api/*.
 
-Lives in docs/contract/ until AGY has scaffolded frontend/. It then moves to
-frontend/api/index.py (Claude does this; AGY should not edit it).
-Pending dependency approval: fastapi, psycopg[binary,pool], pyjwt, pydantic.
+Contract: docs/contract/api-contract.md. Schema: docs/contract/schema.sql.
+Unit-tested against a fake pool (frontend/tests/api/); never run against Neon yet.
+Every route is one indexed query so it finishes well inside the 10 s limit.
 """
 
 import os
@@ -13,8 +13,8 @@ from typing import Annotated, Literal
 from uuid import UUID
 
 import jwt
-from psycopg.errors import ForeignKeyViolation
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
+from psycopg.errors import ForeignKeyViolation
 from psycopg.rows import dict_row
 from psycopg_pool import AsyncConnectionPool
 from pydantic import BaseModel, Field, model_validator
@@ -28,7 +28,10 @@ async def lifespan(app: FastAPI):
         max_size=3,
         timeout=5,  # fail the checkout well inside the 10s function limit
         open=False,
-        kwargs={"row_factory": dict_row, "prepare_threshold": None},  # no prepared statements behind PgBouncer
+        kwargs={
+            "row_factory": dict_row,
+            "prepare_threshold": None,
+        },  # no prepared statements behind PgBouncer
     )
     await app.state.pool.open()
     yield

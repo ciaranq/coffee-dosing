@@ -35,3 +35,7 @@ logs/
 .DS_Store
 ThumbsInfo
 
+
+# Playwright MCP scratch
+.playwright-mcp/
+.vercel
