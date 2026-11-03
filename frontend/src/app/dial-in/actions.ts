@@ -2,6 +2,7 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { computeShot, MAX_GRAMS } from "@/lib/math";
+import { isCreatedLog, pickBackendOrigin } from "@/lib/server/backend";
 import { mintInternalToken } from "@/lib/server/internal-jwt";
 
 export interface SubmitPayload {
@@ -32,12 +33,6 @@ async function getAuthSubject(): Promise<string | null> {
   return userId;
 }
 
-function backendOrigin(): string | null {
-  if (process.env.BACKEND_ORIGIN) return process.env.BACKEND_ORIGIN;
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return null;
-}
-
 const finite = (n: unknown): n is number => typeof n === "number" && Number.isFinite(n) && n >= 0 && n <= MAX_GRAMS;
 
 export async function submitShot(payload: SubmitPayload): Promise<SubmitResult> {
@@ -57,7 +52,7 @@ export async function submitShot(payload: SubmitPayload): Promise<SubmitResult> 
   const subject = await getAuthSubject();
   if (!subject) return { ok: true, persisted: false, reason: "signed-out" };
 
-  const origin = backendOrigin();
+  const origin = pickBackendOrigin(process.env);
   const secret = process.env.INTERNAL_JWT_SECRET;
   if (!origin || !secret) return { ok: true, persisted: false, reason: "backend-not-configured" };
 
@@ -71,8 +66,12 @@ export async function submitShot(payload: SubmitPayload): Promise<SubmitResult> 
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(8000), // stay inside the 10 s function limit
       cache: "no-store",
+      redirect: "manual", // never follow a redirect: a login page would look like success
     });
-    if (!response.ok) return { ok: false, error: `Could not save the shot (${response.status}).` };
+    const body: unknown = await response.json().catch(() => null);
+    if (!isCreatedLog(response.status, response.headers.get("content-type"), body)) {
+      return { ok: false, error: `Could not save the shot (${response.status}). It is still on this device.` };
+    }
     return { ok: true, persisted: true };
   } catch {
     return { ok: false, error: "Could not reach the server. Your shot is still on this device." };
