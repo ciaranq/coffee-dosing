@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js
+.next/
+out/
+build/
+next-env.d.ts
+
+# Vercel (must never be committed; single project linked at repo root)
+.vercel/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Testing & logs
+coverage/
+playwright-report/
+test-results/
+logs/
+*.tsbuildinfo
+
+# OS
+.DS_Store
+ThumbsInfo
+

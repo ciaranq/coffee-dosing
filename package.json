@@ -1,0 +1,16 @@
+{
+  "name": "coffee-dosing",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "dev": "bun run --cwd frontend dev",
+    "lint": "bun run --cwd frontend lint",
+    "test": "bun test --cwd frontend",
+    "build": "bun run --cwd frontend build",
+    "vercel-build": "bun run --cwd frontend vercel-build",
+    "preflight": "bun run lint && bun run test && bun run build"
+  }
+}
