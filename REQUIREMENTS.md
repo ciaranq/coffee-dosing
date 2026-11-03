@@ -5,10 +5,11 @@ A web-based espresso extraction tracker and dialing-in guide designed to help us
 
 ## 2. Tech Stack
 *   **Frontend:** Next.js (App Router), TypeScript, Tailwind CSS
-*   **Backend / API:** Python 3.12, FastAPI, UV (for local dependency management, noting Vercel deployment constraints)
-*   **Package Manager:** Bun
+*   **Backend / API:** Python 3.13 (mandatory), FastAPI, UV (for local dependency management, noting Vercel deployment constraints)
+*   **Package Manager / Runtime:** Bun, Node 22.x
+*   **Auth:** Clerk (session verified in Next.js; FastAPI trusts a short-lived internal JWT)
 *   **Deployment:** Vercel (Frontend and Python Serverless Functions)
-    *   **Vercel Constraints:** The Python backend will run as Serverless Functions on the free tier (10-second timeout, 1024 MB memory limit, stateless execution, cold starts). All API routing must be handled via a single `api/index.py` entry point configured in `vercel.json`. Background tasks are not supported.
+    *   **Vercel Constraints:** The Python backend will run as Serverless Functions on the free tier (10-second timeout, 1024 MB memory limit, stateless execution, cold starts). All API routing must be handled via a single `frontend/api/index.py` entry point configured in `frontend/vercel.json`. The Vercel project's Root Directory is `frontend` (see standards `maps/nextjs-webapp.md`). Background tasks are not supported.
 *   **Database:** Neon Postgres (for global user authentication and persistent logging, utilizing connection pooling for serverless environments)
 
 ## 3. UI/UX Design System

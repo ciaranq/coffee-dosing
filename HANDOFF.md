@@ -8,7 +8,7 @@ This application translates a highly physical, hardware-dependent process into a
 *   **Memory:** Max 1024 MB RAM per function execution.
 *   **State:** The environment is stateless. No local file system storage (except temporary `/tmp`).
 *   **Database:** Use connection pooling for all Neon Postgres interactions to handle rapid spin-up/spin-down of the serverless functions. Do not rely on persistent connections.
-*   **Routing:** All Python endpoints must be routed through a single `api/index.py` ASGI application entry point.
+*   **Routing:** All Python endpoints must be routed through a single `frontend/api/index.py` ASGI application entry point.
 
 ## Core Mathematical Formulas to Implement
 *   **Dry Dose (g):** `Portafilter with Dry Coffee - Empty Portafilter`
